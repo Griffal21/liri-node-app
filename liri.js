@@ -5,8 +5,8 @@ var fs = require("fs");
 var axios = require("axios");
 //from instructions
 var keys = require("./keys.js");
-
-//var spotify = new Spotify(keys.spotify);
+var Spotify = require('node-spotify-api');
+var spotify = new Spotify(keys.spotify);
 var action = process.argv[2];//this is the type to spodify or omdb
 var value = process.argv[3];//this will be the title of what they want to search
 
@@ -16,7 +16,7 @@ switch (action) {
     break;
   
   case "spotify-this-song":
-    spotify();
+    spotifyFunc();
     break;
   
   case "movie-this":
@@ -26,13 +26,13 @@ switch (action) {
   case "do-what-it-says":
     wahtItSays(); //this mispelling is intentional, tribute to Hank Hill
     break;
-  }
+  };
 
 
 
 
 
-  
+
 
 function concert(){
 var queryUrl = "https://rest.bandsintown.com/artists/" + value + "/events?app_id=codingbootcamp";
@@ -57,7 +57,44 @@ axios.get(queryUrl).then(
     console.log("==================================");
 });
 };// concert
-  
+
+
+
+
+function spotifyFunc(){
+  if (value === undefined){
+  spotify.search({ type: "track", query: "the sign", }, function(err, data) {
+    if (err) {
+      return console.log('Error occurred: ' + err);
+    }
+  console.log("==================================");
+  console.log("Song Name: " + data.tracks.items[9].name);
+  console.log("\nPerformed By: " + data.tracks.items[9].artists[0].name);
+  console.log("\nPreview can be Found Here: " + data.tracks.items[9].preview_url);
+  console.log("\nInitially Relased on the Album: " + data.tracks.items[9].album.name);
+  console.log("==================================");
+
+});
+  }
+  else {
+
+spotify.search({ type: "track", query: value, }, function(err, data) {
+  if (err) {
+    return console.log('Error occurred: ' + err);
+  }
+
+console.log("==================================");
+console.log("Song Name: " + data.tracks.items[0].name);
+console.log("\nPerformed By: " + data.tracks.items[0].artists[0].name);
+console.log("\nPreview can be Found Here: " + data.tracks.items[0].preview_url);
+console.log("\nInitially Relased on the Album: " + data.tracks.items[0].album.name);
+console.log("==================================");
+});
+  };
+
+
+};//spotify
+
 
 
 
@@ -85,3 +122,34 @@ axios.get(queryUrl).then(
   }
 );
 };// function movie
+
+
+
+function wahtItSays() {
+  fs.readFile("random.txt", "utf8", function(err, data) {
+    if (err) {
+      return console.log(err);
+    }
+    input = data.split(",");
+    action = input[0];
+    value = input[1];
+
+    console.log(action);
+
+    if(action.trim() === "concert-this"){
+        concert();
+    }
+      
+    else if(action.trim() === "spotify-this-song"){
+        spotifyFunc();
+    }
+      
+    else if(action === "movie-this"){
+        movie();
+    }
+    
+    else {console.log("Put in a workable format")
+  };
+    
+  });
+}; //function wahtItSays()
